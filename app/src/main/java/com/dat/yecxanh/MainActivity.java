@@ -10,6 +10,11 @@ public class MainActivity extends BaseActivity {
     private LinearLayout menu;
 
     @Override
+    protected String getTitleScreen() {
+        return null;
+    }
+
+    @Override
     protected int getLayoutResource() {
         return R.layout.activity_main;
     }
