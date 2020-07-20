@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/group1"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_profile"
+            android:title="Profile"
+
+            />
+    </group>
+
+    <group
+        android:id="@+id/group_phase2"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/leave_apply"
+            android:title="Leave applications" />
+
+        <item
+            android:id="@+id/overtime_apply"
+            android:title="Overtime applications" />
+
+        <item
+            android:id="@+id/leave_approval"
+            android:title="Leave approval" />
+
+        <item
+            android:id="@+id/overtime_approval"
+            android:title="Overtime approval" />
+
+        <item
+            android:id="@+id/overtime_report"
+            android:title="Overtime report" />
+
+    </group>
+
+    <group
+        android:id="@+id/group2"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_time"
+            android:title="Timekeeping history" />
+    </group>
+    <group
+        android:id="@+id/group3"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_logout"
+            android:title="Log out" />
+    </group>
+    <group
+        android:id="@+id/group4"
+        android:checkableBehavior="none">
+
+    </group>
+
+
+</menu>

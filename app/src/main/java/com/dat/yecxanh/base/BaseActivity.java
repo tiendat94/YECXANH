@@ -27,11 +27,11 @@ public abstract class BaseActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(getLayoutResource());
         initView();
-        bindData();
+        bindData(savedInstanceState);
         afteriInitView();
         initListener();
         String titleScreen = getTitleScreen();
-        actionbarConfigSimple(getSupportActionBar(), titleScreen);
+       // actionbarConfigSimple(getSupportActionBar(), titleScreen);
     }
 
     protected void addFragment(@IdRes int containerViewId, @NonNull Fragment fragment, @NonNull String fragmentTag) {
@@ -108,7 +108,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected abstract void initView();
 
-    protected abstract void bindData();
+    protected abstract void bindData(Bundle savedInstanceState);
 
     protected abstract void afteriInitView();
 

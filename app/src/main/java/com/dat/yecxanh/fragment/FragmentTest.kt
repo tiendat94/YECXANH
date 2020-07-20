@@ -17,7 +17,7 @@ class FragmentTest : BaseFragment() {
 
     override fun bindView(view: View?) {
         testViewModel = ViewModelProviders.of(this).get(TestViewModel::class.java)
-        testViewModel!!.text.observe(this, Observer { s -> button.text = s })
+        // testViewModel!!.text.observe(this, Observer { s -> button.text = s })
     }
 
 }
