@@ -1,6 +1,5 @@
 package com.dat.yecxanh.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -70,9 +69,6 @@ public class MultipleSelectionActivity extends BaseActivity implements MultipleS
                 } else {
                     showToast("No Selection");
                 }
-                Intent intent = new Intent(MultipleSelectionActivity.this, FullScannerActivity.class);
-                intent.putExtra(FullScannerActivity.RESULT_DATA, "");
-                startActivityForResult(intent, 1);
             }
         });
     }

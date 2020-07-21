@@ -1,6 +1,7 @@
 package com.dat.yecxanh.ui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -9,18 +10,25 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.dat.yecxanh.R;
-import com.dat.yecxanh.base.BaseActivity;
+import com.dat.yecxanh.base.BaseScannerActivity;
 import com.dat.yecxanh.fragment.CameraSelectorDialogFragment;
+import com.dat.yecxanh.fragment.FormatSelectorDialogFragment;
+import com.dat.yecxanh.fragment.MessageDialogFragment;
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
-public class FullScannerActivity extends BaseActivity implements ZXingScannerView.ResultHandler, CameraSelectorDialogFragment.CameraSelectorDialogListener {
-
+public class FullScannerActivity extends BaseScannerActivity implements MessageDialogFragment.MessageDialogListener,
+        ZXingScannerView.ResultHandler, FormatSelectorDialogFragment.FormatSelectorDialogListener,
+        CameraSelectorDialogFragment.CameraSelectorDialogListener {
     private static final String FLASH_STATE = "FLASH_STATE";
     private static final String AUTO_FOCUS_STATE = "AUTO_FOCUS_STATE";
     private static final String SELECTED_FORMATS = "SELECTED_FORMATS";
@@ -34,31 +42,21 @@ public class FullScannerActivity extends BaseActivity implements ZXingScannerVie
     private String resultData = "";
 
     public static final String RESULT_ACTIVITY_SERIAL_SIM = "RESULT_ACTIVITY_SERIAL_SIM";
-    public static final String RESULT_ACTIVITY_DNI = "RESULT_ACTIVITY_DNI";
-    public static final String RESULT_ACTIVITY_IMEI_HANDSET = "RESULT_ACTIVITY_IMEI_HANDSET";
 
-    @Override
-    protected String getTitleScreen() {
-        return null;
+
+    public static void start(Context context) {
+        Intent intent = new Intent(context, FullScannerActivity.class);
+        context.startActivity(intent);
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.activity_simple_scanner;
-    }
-
-    @Override
-    protected void initView() {
-
-    }
-
-    @Override
-    protected void bindData(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            mFlash = savedInstanceState.getBoolean(FLASH_STATE, false);
-            mAutoFocus = savedInstanceState.getBoolean(AUTO_FOCUS_STATE, true);
-            mSelectedIndices = savedInstanceState.getIntegerArrayList(SELECTED_FORMATS);
-            mCameraId = savedInstanceState.getInt(CAMERA_ID, -1);
+    public void onCreate(Bundle state) {
+        super.onCreate(state);
+        if (state != null) {
+            mFlash = state.getBoolean(FLASH_STATE, false);
+            mAutoFocus = state.getBoolean(AUTO_FOCUS_STATE, true);
+            mSelectedIndices = state.getIntegerArrayList(SELECTED_FORMATS);
+            mCameraId = state.getInt(CAMERA_ID, -1);
         } else {
             mFlash = false;
             mAutoFocus = true;
@@ -66,20 +64,23 @@ public class FullScannerActivity extends BaseActivity implements ZXingScannerVie
             mCameraId = -1;
         }
 
+        setContentView(R.layout.activity_simple_scanner);
+        setupToolbar();
+
         try {
             resultData = getIntent().getExtras().getString(RESULT_DATA);
         } catch (Exception e) {
             resultData = "";
-            e.printStackTrace();
         }
 
         ViewGroup contentFrame = (ViewGroup) findViewById(R.id.content_frame);
         mScannerView = new ZXingScannerView(this);
+        setupFormats();
         contentFrame.addView(mScannerView);
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         mScannerView.setResultHandler(this);
         mScannerView.startCamera(mCameraId);
@@ -88,7 +89,7 @@ public class FullScannerActivity extends BaseActivity implements ZXingScannerVie
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(FLASH_STATE, mFlash);
         outState.putBoolean(AUTO_FOCUS_STATE, mAutoFocus);
@@ -97,13 +98,57 @@ public class FullScannerActivity extends BaseActivity implements ZXingScannerVie
     }
 
     @Override
-    protected void afteriInitView() {
+    public void handleResult(Result rawResult) {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+        }
+        //showMessageDialog("Contents = " + rawResult.getText() + ", Format = " + rawResult.getBarcodeFormat().toString());
+        if (!TextUtils.isEmpty(rawResult.getText())) {
+            returnData(rawResult.getText());
+        }
+    }
 
+    private void returnData(String code) {
+        Intent intent = new Intent();
+        intent.putExtra(resultData, code);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+    }
+
+    public void showMessageDialog(String message) {
+        DialogFragment fragment = MessageDialogFragment.newInstance("Scan Results", message, this);
+        fragment.show(getSupportFragmentManager(), "scan_results");
+    }
+
+    public void closeMessageDialog() {
+        closeDialog("scan_results");
+    }
+
+    public void closeFormatsDialog() {
+        closeDialog("format_selector");
+    }
+
+    public void closeDialog(String dialogName) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        DialogFragment fragment = (DialogFragment) fragmentManager.findFragmentByTag(dialogName);
+        if (fragment != null) {
+            fragment.dismiss();
+        }
     }
 
     @Override
-    protected void initListener() {
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // Resume the camera
+        mScannerView.resumeCameraPreview(this);
+    }
 
+    @Override
+    public void onFormatsSaved(ArrayList<Integer> selectedIndices) {
+        mSelectedIndices = selectedIndices;
+        setupFormats();
     }
 
     @Override
@@ -114,24 +159,29 @@ public class FullScannerActivity extends BaseActivity implements ZXingScannerVie
         mScannerView.setAutoFocus(mAutoFocus);
     }
 
-    @Override
-    public void handleResult(Result rawResult) {
-        try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-            r.play();
-        } catch (Exception e) {
-            e.printStackTrace();
+    public void setupFormats() {
+        List<BarcodeFormat> formats = new ArrayList<BarcodeFormat>();
+        if (mSelectedIndices == null || mSelectedIndices.isEmpty()) {
+            mSelectedIndices = new ArrayList<Integer>();
+            for (int i = 0; i < ZXingScannerView.ALL_FORMATS.size(); i++) {
+                mSelectedIndices.add(i);
+            }
         }
-        if (!TextUtils.isEmpty(rawResult.getText())) {
-            returnData(rawResult.getText());
+
+        for (int index : mSelectedIndices) {
+            formats.add(ZXingScannerView.ALL_FORMATS.get(index));
+        }
+        if (mScannerView != null) {
+            mScannerView.setFormats(formats);
         }
     }
 
-    private void returnData(String code) {
-        Intent returnIntent = new Intent();
-        returnIntent.putExtra(resultData, code);
-        setResult(Activity.RESULT_OK, returnIntent);
-        finish();
+    @Override
+    public void onPause() {
+        super.onPause();
+        mScannerView.stopCamera();
+        closeMessageDialog();
+        closeFormatsDialog();
     }
 }
+

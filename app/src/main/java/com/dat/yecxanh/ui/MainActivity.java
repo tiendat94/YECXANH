@@ -1,19 +1,25 @@
 package com.dat.yecxanh.ui;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.dat.yecxanh.R;
 import com.dat.yecxanh.base.BaseActivity;
-import com.dat.yecxanh.fragment.FragmentTest;
+import com.dat.yecxanh.fragment.TestFragment;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -62,7 +68,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addFragment(R.id.root_layout, new FragmentTest(), "");
+                addFragment(R.id.root_layout, new TestFragment(), "");
             }
         });
         menuImageview.setOnClickListener(new View.OnClickListener() {
@@ -77,4 +83,5 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         return false;
     }
+
 }
